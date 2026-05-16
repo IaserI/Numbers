@@ -28,7 +28,7 @@ for n = nValues
     [L, D, flagSDP] = ldlt_custom(A);
 
     y = L \ b;
-    z = D \ y;
+    z = y ./ D;
     x = L' \ z;
 
     errRel = norm(x - xVero, 2) / norm(xVero, 2);
@@ -53,11 +53,11 @@ function [L, D, flagSDP] = ldlt_custom(A)
 
     %controlli sulla matrice A
     if ~ismatrix(A) || size(A, 1) ~= size(A, 2)
-        error('ldlt_custom:NonSquareInput', 'La matrice A deve essere quardata');
+        error('ldlt_custom:NonSquareInput', 'La matrice A deve essere quadrata.');
     end
 
-    if issymmetric(A) == 0
-        error('ldlt_custom:NonSymmetricInput', 'La matrice A deve essere simmetrica');
+    if ~issymmetric(A)
+        error('ldlt_custom:NonSymmetricInput', 'La matrice A deve essere simmetrica.');
     end
 
 
@@ -91,8 +91,6 @@ function [L, D, flagSDP] = ldlt_custom(A)
 
     %controllo se A è SDP o no
     flagSDP = double(all(D >= -flag_tol));
-
-    D = diag(D);
 end
 
 
