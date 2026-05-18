@@ -48,6 +48,7 @@ for idx_x0 = 1:size(x0_list, 2)
 
     figure;
     hold on;
+    set(gca, 'YScale', 'log');
 
     for idx_method = 1:length(method_m)
         m_method = method_m(idx_method);
