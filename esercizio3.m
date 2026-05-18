@@ -30,6 +30,8 @@ fprintf(fid, '%6s %8s %18s %12s\n', 'test', 'omega', 'errore_rel', 'iter');
 fprintf(fid, '%s\n', repmat('-', 1, 50));
 
 for test = 1:num_tests
+    % La densita' 1/n riguarda gli elementi casuali fuori diagonale.
+    % La diagonale viene poi imposta come richiesto dalla traccia.
     R = sprand(n, n, 1/n);
     R = R - spdiags(diag(R), 0, n, n);
     row_sums = sum(R, 2);
@@ -87,8 +89,9 @@ function [x, iter, rel_res] = sor_method(A, b, x0, omega, tol, nmax)
             'Dimensioni non coerenti fra A, b e x0.');
     end
 
-    if ~isscalar(omega) || omega <= 0
-        error('sor_method:InvalidOmega', 'omega deve essere positivo.');
+    if ~isscalar(omega) || omega <= 0 || omega >= 2
+        error('sor_method:InvalidOmega', ...
+            'omega deve soddisfare 0 < omega < 2.');
     end
 
     if ~isscalar(tol) || tol <= 0
@@ -136,12 +139,13 @@ end
 % condizionata, un residuo piccolo non garantirebbe un errore piccolo;
 % qui le due quantita' sono dello stesso ordine perche' cond(A) e' moderato.
 % Il valore omega = 1 coincide con Gauss-Seidel, omega < 1 e'
-% sotto-rilassamento (piu' stabile ma piu' lento), omega > 1 e'
-% sovra-rilassamento e puo' accelerare la convergenza se scelto bene: nei
-% test omega = 1.1 e' tipicamente piu' veloce di omega = 1, che a sua volta
-% lo e' piu' di omega = 0.5. Le differenze fra i 10 test dipendono dalle
-% diverse realizzazioni random della matrice ma restano contenute.
+% sotto-rilassamento, omega > 1 e' sovra-rilassamento: puo' accelerare la
+% convergenza, ma non lo fa automaticamente.
+% Nei numeri stampati nel report va confrontata la media_iter: per queste
+% matrici omega = 1 puo' risultare migliore di omega = 1.1, quindi il
+% parametro e' utile ma va scelto guardando i dati.
 % La matrice generata e' strettamente diagonale dominante per righe
 % (A(i,i) = 2 + somma degli A(i,j) con j != i, off-diagonali non negativi),
-% quindi SOR converge per ogni 0 < omega < 2 indipendentemente dalla
-% particolare realizzazione random.
+% e questo aiuta la stabilita' delle prove. Per matrici non simmetriche,
+% pero', questa osservazione da sola non basta a promettere convergenza SOR
+% per ogni scelta di omega in (0,2).

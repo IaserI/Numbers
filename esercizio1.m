@@ -64,6 +64,10 @@ function [L, D, flagSDP] = ldlt_custom(A)
     n = size(A, 1);
     L = eye(n);
     D = zeros(n,1);
+    % Qui D e' salvata come vettore dei pivot diagonali, non come matrice
+    % diagonale esplicita. Per risolvere il sistema basta dividere una
+    % componente alla volta, cosi' non si costruisce una matrice quasi tutta
+    % nulla.
 
     zero_pivot_tol = eps*max(1, norm(A, 'fro'));
     flag_tol = 100*zero_pivot_tol;
@@ -94,12 +98,17 @@ function [L, D, flagSDP] = ldlt_custom(A)
 end
 
 
+% La traccia non chiede pivoting: qui si usa la fattorizzazione LDL^T
+% senza pivoting, che si ferma se incontra un pivot nullo o quasi nullo.
+% Nella function D e' il vettore della diagonale: la formula va letta come
+% A = L*diag(D)*L'.
 % Le matrici di Hilbert sono definite positive e per tutti gli n inseriti
 % si ha come risultato 1 del flag.
 % Al crescere di n diventano estremamente mal condizionate: 
 % i pivot della fattorizzazione LDL^T diventano così piccoli
-% da poter essere contaminati dagli errori di approssimazione. Per questo
-% il flag sdp può diventare numericamente meno affidabile per n grandi.
+% da poter essere contaminati dagli errori di approssimazione.
+% Il flag usa una piccola tolleranza sui pivot per non scambiare per
+% negative quantita' dovute solo all'arrotondamento.
 % Il residuo relativo può rimanere piccolo anche quando l'errore
 % relativo cresce, perché il numero di condizionamento amplifica gli errori
 % sui dati e sulle operazioni numeriche.

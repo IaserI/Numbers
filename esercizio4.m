@@ -59,7 +59,13 @@ for idx_x0 = 1:size(x0_list, 2)
         fprintf('Innesco %d, metodo %s: iter = %d, errore relativo finale = %.10e\n', ...
             idx_x0, method_names{idx_method}, iter, final_rel_err);
 
-        semilogy(0:iter, normF_rec, '-o', 'LineWidth', 1.2);
+        valid_plot = isfinite(normF_rec) & normF_rec > 0;
+        if any(valid_plot)
+            semilogy(find(valid_plot) - 1, normF_rec(valid_plot), ...
+                '-o', 'LineWidth', 1.2);
+        else
+            semilogy(NaN, NaN, '-o', 'LineWidth', 1.2);
+        end
 
         results{idx_x0, idx_method} = struct( ...
             'x', x, 'iter', iter, ...
@@ -189,9 +195,8 @@ end
 % richiedere piu' iterazioni, arrestarsi per iter_max o divergere se la
 % Jacobiana fissata non descrive bene il problema lungo il percorso. Nei
 % sistemi nonlineari il punto iniziale influenza sensibilmente la
-% convergenza: da (1,1,1,1) il bacino di attrazione di Newton e' netto e
-% l'arresto avviene in pochi passi; da (0,0,0,0) la dinamica e' piu' lenta
-% e le corde sono le piu' penalizzate.
+% convergenza.
+% Da zero Newton converge, le corde possono divergere.
 % Sul grafico semilogaritmico Newton mostra il tipico raddoppio asintotico
 % delle cifre corrette per passo (convergenza quadratica vicino alla
 % soluzione: ||F(x_{k+1})||_inf ~ C * ||F(x_k)||_inf^2), mentre le corde
